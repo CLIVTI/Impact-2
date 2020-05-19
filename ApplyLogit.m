@@ -1,6 +1,6 @@
 function ModeShare=ApplyLogit(Supply,Population)
 % this function applies MNL model given supply and population segment specified in  function: 
-% SpecifySupply() and SpecifyPopulationSegment().  git tested
+% SpecifySupply() and SpecifyPopulationSegment().  git tested 123123
 
 ModeAlternativeNames=fieldnames(Supply);
 PopulationSegmentNames=fieldnames(Population);
