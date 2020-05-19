@@ -1,10 +1,16 @@
-function [FinalDiscomfortDiff]=DiscomfortDifference(Model,RailDiscomfortStructure,SeatCapacity)
+function [FinalDiscomfortDiff]=DiscomfortDifference(Model,UserDefinedParameters)
 % this function returns the capacitated demand 
 % PeakRailDiscomfort and OffpeakRailDiscomfort are two strings telling you which variable name it is.
 % congestion
 % 
-RailDiscomfort=RailDiscomfortStructure.Varnames;
-DCValue=RailDiscomfortStructure.DCValue;
+%% parse the user-defined parameters
+ParsedUserDefinedParameters=CheckUserDefinedParameters(UserDefinedParameters);
+DCVarName=ParsedUserDefinedParameters.DCVarName;
+DCValue=ParsedUserDefinedParameters.DCValue;
+SeatCapacity=ParsedUserDefinedParameters.SeatCapacity;
+%% star the actual job
+
+RailDiscomfort=DCVarName;
 DiscomfortValue=zeros(1,length(RailDiscomfort));
 for i=1:length(RailDiscomfort)
     GetSupplyInfo={};
@@ -30,7 +36,7 @@ end
 UpdatedModel=UppdateModel(Model,UpdateSupplyInfo);
 UpdatedDemand=CalculateDemandLogit(UpdatedModel);
 
-DiscomfortValue_FromDemand=zeros(1,length(RailDiscomfort));
+Loadfactor_FromDemand=zeros(1,length(RailDiscomfort));
 
 for i=1:length(RailDiscomfort)
     ParsedDiscomfortVar=ParsedDiscomfort.(RailDiscomfort{i});
@@ -96,20 +102,20 @@ for i=1:length(RailDiscomfort)
     
     if strcmp(NestName_1,'Peak')
         Frequency=7*60/ParameterValuePair(2)/2;
-        DiscomfortValue_FromDemand(i)=(DemandSumVar./(SeatCapacity(1).*Frequency));
+        Loadfactor_FromDemand(i)=(DemandSumVar./(SeatCapacity(1).*Frequency));
     elseif strcmp(NestName_1,'Offpeak')
         Frequency=9*60/ParameterValuePair(2)/2;
-        DiscomfortValue_FromDemand(i)=(DemandSumVar./(SeatCapacity(2).*Frequency));
+        Loadfactor_FromDemand(i)=(DemandSumVar./(SeatCapacity(2).*Frequency));
     else
         Frequency=1*60/ParameterValuePair(2)/2;
-        DiscomfortValue_FromDemand(i)=(DemandSumVar./(SeatCapacity(1).*Frequency));
+        Loadfactor_FromDemand(i)=(DemandSumVar./(SeatCapacity(1).*Frequency));
     end 
 
 
     
 end
 
-Diff=(log(abs(DiscomfortValue))./log(DCValue)-DiscomfortValue_FromDemand);
+Diff=(log(abs(DiscomfortValue+1))./log(DCValue)-Loadfactor_FromDemand);
 clear UpdatedModel
 return
 

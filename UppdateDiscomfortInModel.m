@@ -1,10 +1,17 @@
-function [UpdatedModelFinal]=UppdateDiscomfortInModel(Model,RailDiscomfortStructure,SeatCapacity)
+function [UpdatedModelFinal]=UppdateDiscomfortInModel(Model,UserDefinedParameters)
 % this function returns the capacitated demand 
 % PeakRailDiscomfort and OffpeakRailDiscomfort are two strings telling you which variable name it is.
 % congestion
 % 
-RailDiscomfort=RailDiscomfortStructure.Varnames;
-DCValue=RailDiscomfortStructure.DCValue;
+
+
+%% parse the user-defined parameters
+ParsedUserDefinedParameters=CheckUserDefinedParameters(UserDefinedParameters);
+DCVarName=ParsedUserDefinedParameters.DCVarName;
+DCValue=ParsedUserDefinedParameters.DCValue;
+SeatCapacity=ParsedUserDefinedParameters.SeatCapacity;
+%% start the actual job
+RailDiscomfort=DCVarName;
 DiscomfortValueInitial=zeros(1,length(RailDiscomfort));
 for i=1:length(RailDiscomfort)
     GetSupplyInfo={};
@@ -100,13 +107,13 @@ for i=1:length(RailDiscomfort)
     
     if strcmp(NestName_1,'Peak')
         Frequency=7*60/ParameterValuePair(2)/2;
-        DiscomfortValue_FromDemand(i)=-(DCValue(i)).^(DemandSumVar./(SeatCapacity(1).*Frequency));
+        DiscomfortValue_FromDemand(i)=(DCValue(i)).^(DemandSumVar./(SeatCapacity(1).*Frequency))-1;
     elseif strcmp(NestName_1,'Offpeak')
         Frequency=9*60/ParameterValuePair(2)/2;
-        DiscomfortValue_FromDemand(i)=-(DCValue(i)).^(DemandSumVar./(SeatCapacity(2).*Frequency));
+        DiscomfortValue_FromDemand(i)=(DCValue(i)).^(DemandSumVar./(SeatCapacity(2).*Frequency))-1;
     else
         Frequency=1*60/ParameterValuePair(2)/2;
-        DiscomfortValue_FromDemand(i)=-(DemandSumVar./(SeatCapacity(1).*Frequency));
+        DiscomfortValue_FromDemand(i)=(DCValue(i)).^(DemandSumVar./(SeatCapacity(1).*Frequency))-1;
     end 
 
 end

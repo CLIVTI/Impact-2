@@ -1,10 +1,17 @@
-function [CapacitatedDemand,CapacitatedUtility,UpdatedModel,ComfortBefore,ComfortAfter,ConsumerSurplus]=CalculateCapacitatedDemand(Model,RailDiscomfortStructure,SeatCapacity)
+function [CapacitatedDemand,CapacitatedUtility,UpdatedModel,ComfortBefore,ComfortAfter,ConsumerSurplus]=CalculateCapacitatedDemand(Model,UserDefinedParameters)
 % this function returns the capacitated demand 
 % PeakRailDiscomfort and OffpeakRailDiscomfort are two strings telling you which variable name it is.
 % congestion
 % 
-RailDiscomfort=RailDiscomfortStructure.Varnames;
-DCValue=RailDiscomfortStructure.DCValue;
+
+%% parse the user-defined parameters
+ParsedUserDefinedParameters=CheckUserDefinedParameters(UserDefinedParameters);
+DCVarName=ParsedUserDefinedParameters.DCVarName;
+DCValue=ParsedUserDefinedParameters.DCValue;
+SeatCapacity=ParsedUserDefinedParameters.SeatCapacity;
+%% star the actual job
+
+RailDiscomfort=DCVarName;
 startValue=zeros(1,length(RailDiscomfort));
 for i=1:length(RailDiscomfort)
     GetSupplyInfo={};
@@ -19,15 +26,9 @@ end
 
 ComfortBefore=array2table(startValue,'VariableNames',RailDiscomfort);
 %%
-A = [];
-b = [];
-Aeq = [];
-beq = [];
-lb=[];
-ub = [];
-nonlcon =@(DiscomfortValue)Constraints(Model,DiscomfortValue,ParsedDiscomfort,SeatCapacity,DCValue);
+
 options = optimset('GradObj','off','LargeScale','off','Display','off','TolFun',1e-6,'TolX',1e-6','MaxFunEvals',10000,'MaxIter',3000);
- [FinalDiscomfortValue,fval,~,output,~,~]= fmincon(@(DiscomfortValue)DiscomfortDiff(Model,DiscomfortValue,ParsedDiscomfort,SeatCapacity,DCValue),startValue,A,b,Aeq,beq,lb,ub,nonlcon ,options); % '@' is a handle for the LogLikelihood below
+ [FinalDiscomfortValue,fval,~,output,~,~]= fminunc(@(DiscomfortValue)DiscomfortDiff(Model,DiscomfortValue,ParsedDiscomfort,SeatCapacity,DCValue),startValue ,options); % '@' is a handle for the LogLikelihood below
 
 ComfortAfter=array2table(FinalDiscomfortValue,'VariableNames',RailDiscomfort);
 RailDiscomfort=fieldnames(ParsedDiscomfort);
@@ -138,29 +139,35 @@ for i=1:length(RailDiscomfort)
 end
 
 
-Diff=sum((log(DiscomfortValue)./log(DCValue)-DiscomfortValue_FromDemand).^2);
+Diff=sum((log(DiscomfortValue+1)./log(DCValue)-DiscomfortValue_FromDemand).^2);
 clear UpdatedModel
 return
 
 
-function [c,ceq]=Constraints(Model,DiscomfortValue,ParsedDiscomfort,SeatCapacity,DCValue)
-c=[];
-ceq=[];
-RailDiscomfort=fieldnames(ParsedDiscomfort);
-UpdateSupplyInfo={};
-for i=1:length(RailDiscomfort)
-    UpdateSupplyInfo.(RailDiscomfort{i})=DiscomfortValue(i);
-end
-
-UpdatedModel=UppdateModel(Model,UpdateSupplyInfo);
-UpdatedDemand=CalculateDemandLogit(UpdatedModel);
-
-GetSupplyInfo={};
-GetSupplyInfo.FirstWaitTimeRail=1;
-WaitTime=table2array(GetAttribute(UpdatedModel,GetSupplyInfo));
-Frequency=WaitTimeToFrequency(WaitTime);
-c(1)=UpdatedDemand.('All_Rail')-Frequency.*SeatCapacity(1);
-return
+% function [c,ceq]=Constraints(Model,DiscomfortValue,ParsedDiscomfort,SeatCapacity,DCValue)
+% c=[];
+% ceq=[];
+% RailDiscomfort=fieldnames(ParsedDiscomfort);
+% UpdateSupplyInfo={};
+% for i=1:length(RailDiscomfort)
+%     UpdateSupplyInfo.(RailDiscomfort{i})=DiscomfortValue(i);
+% end
+% 
+% UpdatedModel=UppdateModel(Model,UpdateSupplyInfo);
+% UpdatedDemand=CalculateDemandLogit(UpdatedModel);
+% 
+% GetSupplyInfo={};
+% GetSupplyInfo.FirstWaitTimePeakRail=1;
+% WaitTime=table2array(GetAttribute(UpdatedModel,GetSupplyInfo));
+% FrequencyPeak=WaitTimeToFrequency(WaitTime);
+% c(1)=UpdatedDemand.('Private_Peak_Rail')+UpdatedDemand.('Business_Peak_Rail')-FrequencyPeak*7.*SeatCapacity(1);
+% 
+% GetSupplyInfo={};
+% GetSupplyInfo.FirstWaitTimeOffpeakRail=1;
+% WaitTime=table2array(GetAttribute(UpdatedModel,GetSupplyInfo));
+% FrequencyOffpeak=WaitTimeToFrequency(WaitTime);
+% c(2)=UpdatedDemand.('Private_Offpeak_Rail')+UpdatedDemand.('Business_Offpeak_Rail')-FrequencyOffpeak*9.*SeatCapacity(2);
+% return
 
 function [ParsedDiscomfort]=ParseDiscomfortAttributes(Model,DiscomfortName)
 ParsedDiscomfort={};

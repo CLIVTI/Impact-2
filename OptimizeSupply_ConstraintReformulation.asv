@@ -73,16 +73,16 @@ GetSupplyInfo.('CostBusinessOffpeakRail')=1;
 GetSupplyInfo.('DiscomfortCostPrivatePeakRail')=1;
 GetSupplyInfo.('DiscomfortCostPrivateOffpeakRail')=1;
 GetSupplyInfo.('DiscomfortCostBusinessPeakRail')=1;
-GetSupplyInfo.('DiscomfortCostBusinessOffpeakRail')=1;
+GetSupplyInfo.('DiscomfortCostBusinessPeakRail')=1;
 CostValues=GetAttribute(Model,GetSupplyInfo);
 
 
 
 
 RevenueBase=(CostValues.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostPrivatePeakRail')).*(CapacitatedDemandBaseline.('Private_Peak_Rail'))+...
-            (CostValues.('CostPrivateOffpeakRail')+ExtraCostBaseValue(2).*CostValues.('DiscomfortCostPrivateOffpeakRail')).*(CapacitatedDemandBaseline.('Private_Offpeak_Rail'))+...
-            (CostValues.('CostBusinessPeakRail')+ExtraCostBaseValue(3).*CostValues.('DiscomfortCostBusinessPeakRail')).*(CapacitatedDemandBaseline.('Business_Peak_Rail'))+...
-            (CostValues.('CostBusinessOffpeakRail')+ExtraCostBaseValue(4).*CostValues.('DiscomfortCostBusinessOffpeakRail')).*(CapacitatedDemandBaseline.('Business_Offpeak_Rail'));
+            (CostValues.('CostPrivateOffpeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostPrivateOffpeakRail')).*(CapacitatedDemandBaseline.('Private_Offpeak_Rail'))+...
+            (CostValues.('CostBusinessPeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostBusinessPeakRail')).*(CapacitatedDemandBaseline.('Business_Peak_Rail'))+...
+            (CostValues.('CostBusinessOffpeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostBusinessPeakRail')).*(CapacitatedDemandBaseline.('Business_Offpeak_Rail'));
 ObjectiveFunctionBaseline.Revenue=RevenueBase;        
 
 % calculate the Operational cost.
@@ -118,10 +118,10 @@ lb_noComfort = zeros(1,length(startValue)-4);
 lb=[lb_noComfort,-inf,-inf,-inf,-inf];
 ub = [];
 nonlcon =@(DecisionVariableValues)CapacityConstraints(DecisionVariableValues,Model,DecisionVariable,UserDefinedParameters);
-options = optimset('GradObj','off','LargeScale','off','Display','iter','TolFun',1e-6,'TolX',1e-6,'MaxFunEvals',10000,'MaxIter',3000);
-[beta,fval,~,output,~,~]= fmincon(@(DecisionVariableValues)ObjectiveFunction(DecisionVariableValues,Model,ObjectiveFunctionBaseline,DecisionVariable,AlternativeNames,UserDefinedParameters),startValue,A,b,Aeq,beq,lb,ub,nonlcon ,options); % '@' is a handle for the LogLikelihood below
+options = optimset('GradObj','off','LargeScale','off','Display','off','TolFun',1e-6,'TolX',1e-6,'MaxFunEvals',10000,'MaxIter',3000);
+[beta,fval,~,output,~,~]= fmincon(@(DecisionVariableValues)ObjectiveFunction(DecisionVariableValues,Model,ObjectiveFunctionBaseline,DecisionVariable,AlternativeNames,UserDefinedParameters,CSorPS),startValue,A,b,Aeq,beq,lb,ub,nonlcon ,options); % '@' is a handle for the LogLikelihood below
 
-[MinusWelfare,OptimizedDemand,UpdatedModel,ObjectiveFunctionFinal]=ObjectiveFunction(beta,Model,ObjectiveFunctionBaseline,DecisionVariable,AlternativeNames,UserDefinedParameters);
+[MinusWelfare,OptimizedDemand,UpdatedModel,ObjectiveFunctionFinal]=ObjectiveFunction(beta,Model,ObjectiveFunctionBaseline,DecisionVariable,AlternativeNames,BanAvgift,CSorPS);
 WelfareIncrease=-MinusWelfare;
 CS=ObjectiveFunctionFinal.CS;
 Revenue=ObjectiveFunctionFinal.Revenue;
@@ -149,7 +149,7 @@ for i=1:length(beta)
 end
 
 % print out the capacity of the final model compared to its demand
-[c,~]=CapacityConstraints(beta,UpdatedModel,DecisionVariable,UserDefinedParameters);
+[c,~]=CapacityConstraints(beta,UpdatedModel,DecisionVariable,RailDiscomfort,SeatCapacity,MaxSeatCapacity);
 fprintf('\n\n----------------- DISPLAY CAPACITY ---------------------')
 fprintf('\n %-15s : %8s %8s \n' , ['CapacitySegment'],['MaxCapacity'],['Demand']);
 fprintf('%-15s : %+8.2f %+8.2f \n', 'Peak_Rail',     OptimizedDemand.('Private_Peak_Rail')+OptimizedDemand.('Business_Peak_Rail')-c(1) , OptimizedDemand.('Private_Peak_Rail')+OptimizedDemand.('Business_Peak_Rail'))
@@ -226,7 +226,7 @@ CSDiff=CSTrialSolution-CSBase;
 
 CostPrivatePeakRail=UpdatedModel.Supply.Private.Peak.Rail('CostPrivatePeakRail');
 CostBusinessPeakRail=UpdatedModel.Supply.Business.Peak.Rail('CostBusinessPeakRail');
-% fprintf('%+8.3f %+8.3f %+8.3f %+8.3f\n', CostPrivatePeakRail(2),CostBusinessPeakRail(2),CSTrialSolution-CSBase,CS_RuleOfHalf);
+fprintf('%+8.3f %+8.3f %+8.3f %+8.3f\n', CostPrivatePeakRail(2),CostBusinessPeakRail(2),CSTrialSolution-CSBase,CS_RuleOfHalf);
 % fprintf('%+8.3f %+8.3f\n',   CSTrialSolution,CSBase);
 %%
 % revenue part
@@ -240,13 +240,13 @@ GetSupplyInfo.('CostBusinessOffpeakRail')=1;
 GetSupplyInfo.('DiscomfortCostPrivatePeakRail')=1;
 GetSupplyInfo.('DiscomfortCostPrivateOffpeakRail')=1;
 GetSupplyInfo.('DiscomfortCostBusinessPeakRail')=1;
-GetSupplyInfo.('DiscomfortCostBusinessOffpeakRail')=1;
-CostValues=GetAttribute(UpdatedModel,GetSupplyInfo);
+GetSupplyInfo.('DiscomfortCostBusinessPeakRail')=1;
+CostValues=GetAttribute(Model,GetSupplyInfo);
 
-RevenueTrialSolution=(CostValues.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostPrivatePeakRail')).*(CapacitatedDemandTrialSolution.('Private_Peak_Rail'))+...
-            (CostValues.('CostPrivateOffpeakRail')+ExtraCostBaseValue(2).*CostValues.('DiscomfortCostPrivateOffpeakRail')).*(CapacitatedDemandTrialSolution.('Private_Offpeak_Rail'))+...
-            (CostValues.('CostBusinessPeakRail')+ExtraCostBaseValue(3).*CostValues.('DiscomfortCostBusinessPeakRail')).*(CapacitatedDemandTrialSolution.('Business_Peak_Rail'))+...
-            (CostValues.('CostBusinessOffpeakRail')+ExtraCostBaseValue(4).*CostValues.('DiscomfortCostBusinessOffpeakRail')).*(CapacitatedDemandTrialSolution.('Business_Offpeak_Rail'));
+RevenueTrialSolution=(CostValues.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostPrivatePeakRail')).*(CapacitatedDemandBaseline.('Private_Peak_Rail'))+...
+            (CostValues.('CostPrivateOffpeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostPrivateOffpeakRail')).*(CapacitatedDemandBaseline.('Private_Offpeak_Rail'))+...
+            (CostValues.('CostBusinessPeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostBusinessPeakRail')).*(CapacitatedDemandBaseline.('Business_Peak_Rail'))+...
+            (CostValues.('CostBusinessOffpeakRail')+ExtraCostBaseValue(1).*CostValues.('DiscomfortCostBusinessPeakRail')).*(CapacitatedDemandBaseline.('Business_Offpeak_Rail'));
         
 ObjectiveFunctionFinal.Revenue=RevenueTrialSolution;
 RevenueDiff=RevenueTrialSolution-RevenueBase;
@@ -297,9 +297,6 @@ return
 
 
 function [c,ceq]=CapacityConstraints(DecisionVariableValues,Model,DecisionVariable,UserDefinedParameters)
-
-ParsedUserDefinedParameters=CheckUserDefinedParameters(UserDefinedParameters);
-SeatCapacity=ParsedUserDefinedParameters.SeatCapacity;
 % the capacity constraints of the model
 c=[];
 ceq=[];
