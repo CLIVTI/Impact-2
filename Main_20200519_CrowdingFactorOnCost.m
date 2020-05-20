@@ -150,14 +150,14 @@ Model.PopulationSize.Business=TargetDemand.('Business_Peak_Rail')+TargetDemand.(
 
 
 % if scaleparameter=0.5, use the following
-CalibrateParameters.Private.Peak.Bus.ASCPrivatePeakBus=-4.1897 ;
+CalibrateParameters.Private.Peak.Bus.ASCPrivatePeakBus=-8.1839  ;
 CalibrateParameters.Private.Peak.Air.ASCPrivatePeakAir=7.8831  ;
 CalibrateParameters.Private.Peak.Car.ASCPrivatePeakCar=1.4745  ;
 CalibrateParameters.Private.Offpeak.Rail.ASCPrivateOffpeakRail=-0.4085    ;
 CalibrateParameters.Private.Offpeak.Bus.ASCPrivateOffpeakBus=-2.8811  ;
 CalibrateParameters.Private.Offpeak.Air.ASCPrivateOffpeakAir=0.2193;
 CalibrateParameters.Private.Offpeak.Car.ASCPrivateOffpeakCar= 0.3861 ;
-CalibrateParameters.Business.Peak.Rail.ASCBusinessPeakRail=5.3041  ;
+CalibrateParameters.Business.Peak.Rail.ASCBusinessPeakRail=16.5726  ;
 CalibrateParameters.Business.Peak.Bus.ASCBusinessPeakBus=5.1492   ;
 CalibrateParameters.Business.Peak.Air.ASCBusinessPeakAir=10.4441 ;
 CalibrateParameters.Business.Peak.Car.ASCBusinessPeakCar=7.8248;
