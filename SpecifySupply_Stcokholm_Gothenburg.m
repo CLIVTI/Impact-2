@@ -44,10 +44,10 @@ ModelStructure.PopulationSize.Business=991+2+642+182;
 %% specify the in-data structure for the demand segment Private
 ModelStructure.Supply.Private.Peak.Rail=containers.Map();     %     parameter,             value
 ModelStructure.Supply.Private.Peak.Rail('ASCPrivatePeakRail')=        [0,                       1];  
-ModelStructure.Supply.Private.Peak.Rail('CostPrivatePeakRail')=       [-CostScaleParameter(1),                  403];  % normalize cost parameters to 0.01, the scale parameter. Same variable name must be used in Specify population
+ModelStructure.Supply.Private.Peak.Rail('CostPrivatePeakRail')=       [-CostScaleParameter(1)*2,                  403];  % normalize cost parameters to 0.01, the scale parameter. Same variable name must be used in Specify population
 ModelStructure.Supply.Private.Peak.Rail('DiscomfortCostPrivatePeakRail')=  [-CostScaleParameter(1).*ExtraCostBaseValue(1),         (DCValue(1)^((1992+991)/(SeatCapacity(1)*14))-1)]; 
-ModelStructure.Supply.Private.Peak.Rail('FirstWaitTimePeakRail')=     [-CostScaleParameter(1).*41/60,           FrequencyToWaitTime(14/7)];  % here
-ModelStructure.Supply.Private.Peak.Rail('InVehPrivatePeakRail')=      [-CostScaleParameter(1)*78/60,           3*60];   % here 3 means 3 h travel time, 
+ModelStructure.Supply.Private.Peak.Rail('FirstWaitTimePeakRail')=     [-CostScaleParameter(1).*41/60,           FrequencyToWaitTime(14/7)];  % here initial 41
+ModelStructure.Supply.Private.Peak.Rail('InVehPrivatePeakRail')=      [-CostScaleParameter(1)*78/60,           3*60];   % here 3 means 3 h travel time,  innitial value 78
 ModelStructure.Supply.Private.Peak.Rail('ScaleParameter')=        ScaleParameter;  % make sure you use 'ScaleParameter' as the key name!!!!! strictly the same!!!!!
 %% specify the parameter and variable values
 ModelStructure.Supply.Private.Peak.Bus=containers.Map();           %     parameter              , value
