@@ -19,15 +19,15 @@ UserDefinedParameters={};
 UserDefinedParameters.CostScaleParameter.Private=0.01*0.00172/0.00305;  % costScaleParameter for demand segment private
 UserDefinedParameters.CostScaleParameter.Business= 0.01*0.00172/0.00305;  % costScaleParameter for demand segment business
 
-UserDefinedParameters.DCValue.Private.Peak=1.6;
-UserDefinedParameters.DCValue.Private.Offpeak=1.6;
-UserDefinedParameters.DCValue.Business.Peak=1.6;
-UserDefinedParameters.DCValue.Business.Offpeak=1.6;
+UserDefinedParameters.DCValue.Private.Peak=3;
+UserDefinedParameters.DCValue.Private.Offpeak=3;
+UserDefinedParameters.DCValue.Business.Peak=3;
+UserDefinedParameters.DCValue.Business.Offpeak=3;
 
-UserDefinedParameters.ExtraCostBaseValue.Private.Peak=100;  % the parameter a in the Maria's equation differentiated to different values
-UserDefinedParameters.ExtraCostBaseValue.Private.Offpeak=100;
-UserDefinedParameters.ExtraCostBaseValue.Business.Peak=100;
-UserDefinedParameters.ExtraCostBaseValue.Business.Offpeak=100;
+UserDefinedParameters.ExtraCostBaseValue.Private.Peak=200;  % the parameter a in the Maria's equation differentiated to different values
+UserDefinedParameters.ExtraCostBaseValue.Private.Offpeak=200;
+UserDefinedParameters.ExtraCostBaseValue.Business.Peak=200;
+UserDefinedParameters.ExtraCostBaseValue.Business.Offpeak=200;
 
 UserDefinedParameters.DCVarName.Private.Peak='DiscomfortCostPrivatePeakRail';
 UserDefinedParameters.DCVarName.Private.Offpeak='DiscomfortCostPrivateOffpeakRail';
@@ -107,10 +107,14 @@ TargetDemand.('Business_Offpeak_Car')=14; % >0 ASC
 
 % update discomfort variables in model.
 UpdateSupplyInfo={};
-UpdateSupplyInfo.DiscomfortCostPrivatePeakRail=UserDefinedParameters.DCValue.Private.Peak^((TargetDemand.('Private_Peak_Rail')+TargetDemand.('Business_Peak_Rail'))/(SeatCapacity(1)*14))-1;
-UpdateSupplyInfo.DiscomfortCostPrivateOffpeakRail=UserDefinedParameters.DCValue.Private.Offpeak^((TargetDemand.('Private_Offpeak_Rail')+TargetDemand.('Business_Offpeak_Rail'))/(SeatCapacity(2)*12))-1;
-UpdateSupplyInfo.DiscomfortCostBusinessPeakRail=UserDefinedParameters.DCValue.Business.Peak^((TargetDemand.('Private_Peak_Rail')+TargetDemand.('Business_Peak_Rail'))/(SeatCapacity(1)*14))-1;
-UpdateSupplyInfo.DiscomfortCostBusinessOffpeakRail=UserDefinedParameters.DCVarName.Business.Offpeak^((TargetDemand.('Private_Offpeak_Rail')+TargetDemand.('Business_Offpeak_Rail'))/(SeatCapacity(2)*12))-1;
+UpdateSupplyInfo.DiscomfortCostPrivatePeakRail=UserDefinedParameters.DCValue.Private.Peak.^((TargetDemand.('Private_Peak_Rail')+TargetDemand.('Business_Peak_Rail'))/(UserDefinedParameters.SeatCapacity.Peak*14))-1;
+UpdateSupplyInfo.DiscomfortCostPrivateOffpeakRail=UserDefinedParameters.DCValue.Private.Offpeak.^((TargetDemand.('Private_Offpeak_Rail')+TargetDemand.('Business_Offpeak_Rail'))/(UserDefinedParameters.SeatCapacity.Offpeak*12))-1;
+UpdateSupplyInfo.DiscomfortCostBusinessPeakRail=UserDefinedParameters.DCValue.Business.Peak.^((TargetDemand.('Private_Peak_Rail')+TargetDemand.('Business_Peak_Rail'))/(UserDefinedParameters.SeatCapacity.Peak*14))-1;
+UpdateSupplyInfo.DiscomfortCostBusinessOffpeakRail=UserDefinedParameters.DCValue.Business.Offpeak.^((TargetDemand.('Private_Offpeak_Rail')+TargetDemand.('Business_Offpeak_Rail'))/(UserDefinedParameters.SeatCapacity.Offpeak*12))-1;
+UpdateSupplyInfo.('CostPrivatePeakRail')=403-UserDefinedParameters.ExtraCostBaseValue.Private.Peak.*UpdateSupplyInfo.DiscomfortCostPrivatePeakRail;
+UpdateSupplyInfo.('CostPrivateOffpeakRail')=378-UserDefinedParameters.ExtraCostBaseValue.Private.Offpeak.*UpdateSupplyInfo.DiscomfortCostPrivateOffpeakRail;
+UpdateSupplyInfo.('CostPrivatePeakRail')=403-UserDefinedParameters.ExtraCostBaseValue.Private.Peak.*UpdateSupplyInfo.DiscomfortCostPrivatePeakRail;
+UpdateSupplyInfo.('CostPrivateOffpeakRail')=378-UserDefinedParameters.ExtraCostBaseValue.Private.Offpeak.*UpdateSupplyInfo.DiscomfortCostPrivateOffpeakRail;
 Model=UppdateModel(Model,UpdateSupplyInfo);
 AttributeGet=GetAttribute(Model,UpdateSupplyInfo)
 
@@ -146,21 +150,21 @@ Model.PopulationSize.Business=TargetDemand.('Business_Peak_Rail')+TargetDemand.(
 
 
 % if scaleparameter=0.5, use the following
-CalibrateParameters.Private.Peak.Bus.ASCPrivatePeakBus=-5.2318;
-CalibrateParameters.Private.Peak.Air.ASCPrivatePeakAir=13.8926  ;
-CalibrateParameters.Private.Peak.Car.ASCPrivatePeakCar=2.3825 ;
-CalibrateParameters.Private.Offpeak.Rail.ASCPrivateOffpeakRail=-0.7729   ;
-CalibrateParameters.Private.Offpeak.Bus.ASCPrivateOffpeakBus=-4.6798  ;
-CalibrateParameters.Private.Offpeak.Air.ASCPrivateOffpeakAir=0.4728;
-CalibrateParameters.Private.Offpeak.Car.ASCPrivateOffpeakCar=0.7882;
-CalibrateParameters.Business.Peak.Rail.ASCBusinessPeakRail=4.5976 ;
-CalibrateParameters.Business.Peak.Bus.ASCBusinessPeakBus=10.9579  ;
-CalibrateParameters.Business.Peak.Air.ASCBusinessPeakAir=10.9855 ;
-CalibrateParameters.Business.Peak.Car.ASCBusinessPeakCar=6.9212 ;
-CalibrateParameters.Business.Offpeak.Rail.ASCBusinessOffpeakRail=-1.0048 ;
-CalibrateParameters.Business.Offpeak.Bus.ASCBusinessOffpeakBus=-1.1743  ;
-CalibrateParameters.Business.Offpeak.Air.ASCBusinessOffpeakAir=3.3688 ;
-CalibrateParameters.Business.Offpeak.Car.ASCBusinessOffpeakCar=1.2311 ;
+CalibrateParameters.Private.Peak.Bus.ASCPrivatePeakBus=-4.1897 ;
+CalibrateParameters.Private.Peak.Air.ASCPrivatePeakAir=7.8831  ;
+CalibrateParameters.Private.Peak.Car.ASCPrivatePeakCar=1.4745  ;
+CalibrateParameters.Private.Offpeak.Rail.ASCPrivateOffpeakRail=-0.4085    ;
+CalibrateParameters.Private.Offpeak.Bus.ASCPrivateOffpeakBus=-2.8811  ;
+CalibrateParameters.Private.Offpeak.Air.ASCPrivateOffpeakAir=0.2193;
+CalibrateParameters.Private.Offpeak.Car.ASCPrivateOffpeakCar= 0.3861 ;
+CalibrateParameters.Business.Peak.Rail.ASCBusinessPeakRail=5.3041  ;
+CalibrateParameters.Business.Peak.Bus.ASCBusinessPeakBus=5.1492   ;
+CalibrateParameters.Business.Peak.Air.ASCBusinessPeakAir=10.4441 ;
+CalibrateParameters.Business.Peak.Car.ASCBusinessPeakCar=7.8248;
+CalibrateParameters.Business.Offpeak.Rail.ASCBusinessOffpeakRail=0.1439  ;
+CalibrateParameters.Business.Offpeak.Bus.ASCBusinessOffpeakBus=-0.5815  ;
+CalibrateParameters.Business.Offpeak.Air.ASCBusinessOffpeakAir=3.4175  ;
+CalibrateParameters.Business.Offpeak.Car.ASCBusinessOffpeakCar=1.2797  ;
 
 % % if scaleparameter=0.5, and CostScaleParameter=0.1 use the following
 % CalibrateParameters.Private.Peak.Bus.ASCPrivatePeakBus=-6.8740 ;
@@ -205,27 +209,20 @@ CalibrationStatistics.FinalModeShare
 [ModelDemand,Utility]=CalculateDemandLogit(Model);
 % calculate elasticity of all supply variables
 [Elasticity,DemandShift]=ElasticityLogit(Model);  % elasticity already *100%
-Model.Supply.Private.Peak.Rail('DiscomfortPrivatePeakRail')
+
 
 
 %% DiscomfortDiff function unitest
 UpdateSupplyInfo={};
-UpdateSupplyInfo.CostPrivatePeakRail=442.175;
-UpdateSupplyInfo.FirstWaitTimePeakRail=47.210;
-UpdateSupplyInfo.CostPrivateOffpeakRail=319.051;
-UpdateSupplyInfo.FirstWaitTimeOffpeakRail=81.000 ;
-UpdateSupplyInfo.CostBusinessPeakRail=743.241 ;
-% UpdateSupplyInfo.CostPrivatePeakRail=300; % 403
-% UpdateSupplyInfo.CostPrivateOffpeakRail=278;  % 378
+UpdateSupplyInfo.CostPrivatePeakRail=600;
 NewTrialModel=UppdateModel(Model,UpdateSupplyInfo);
-[FinalDiscomfortDiffUnitest]=DiscomfortDifference(NewTrialModel,RailDiscomfort,SeatCapacity);
+[FinalDiscomfortDiffUnitest]=DiscomfortDifference(Model,UserDefinedParameters);
 FinalDiscomfortDiffUnitest
-% [CapacitatedDemand,CapacitatedUtility,FinalModel,ComfortBefore,ComfortAfter]=CalculateCapacitatedDemand(NewTrialModel,RailDiscomfort,SeatCapacity);
-% ComfortBefore
-% ComfortAfter
-% GetSupplyInfo={};
-% GetSupplyInfo.(RailDiscomfort{1})=1;
-% AttributeGet=GetAttribute(Model,GetSupplyInfo);
+[CapacitatedDemand,CapacitatedUtility,FinalModel,ComfortBefore,ComfortAfter]=CalculateCapacitatedDemand(NewTrialModel,UserDefinedParameters);
+% [CapacitatedDemand,CapacitatedUtility,FinalModel,ComfortBefore,ComfortAfter]=CalculateCapacitatedDemand(Model,UserDefinedParameters);
+ComfortBefore
+ComfortAfter
+
 %% calculate the capacitated demand through optimization
 % UpdateSupplyInfo={};
 % UpdateSupplyInfo.CostPrivatePeakRail=600;
@@ -259,37 +256,33 @@ UpdateSupplyInfo.CostPrivatePeakRail=350; % 403
 UpdateSupplyInfo.CostPrivateOffpeakRail=450;  % 378
 NewTrialModel=UppdateModel(Model,UpdateSupplyInfo);
 %test consumer surplus
-% [CS_Logsum]=ConsumerSurplus(DecisionVariable,Model,NewTrialModel,RailDiscomfort,SeatCapacity);
+[CS_Logsum]=ConsumerSurplus(DecisionVariable,Model,NewTrialModel);
 % CS_Logsum
 clear NewTrialModel
 
 %% unitest function UppdateDiscomfortInModel
 UpdateSupplyInfo={};
 UpdateSupplyInfo.CostPrivatePeakRail=500; % 403
-UpdateSupplyInfo.CostPrivateOffpeakRail=300;  % 378
 NewTrialModel=UppdateModel(Model,UpdateSupplyInfo);
-[UpdatedModel]=UppdateDiscomfortInModel(NewTrialModel,RailDiscomfort,SeatCapacity);
+[UpdatedModel]=UppdateDiscomfortInModel(NewTrialModel,UserDefinedParameters);
 
 GetSupplyInfo={};
-GetSupplyInfo.('DiscomfortPrivatePeakRail')=1;
-GetSupplyInfo.('DiscomfortPrivateOffpeakRail')=1;
-GetSupplyInfo.('DiscomfortBusinessPeakRail')=1;
+GetSupplyInfo.('DiscomfortCostPrivatePeakRail')=1;
+GetSupplyInfo.('DiscomfortCostPrivateOffpeakRail')=1;
+GetSupplyInfo.('DiscomfortCostBusinessPeakRail')=1;
+GetSupplyInfo.('DiscomfortCostBusinessOffpeakRail')=1;
 AttributeGet=GetAttribute(Model,GetSupplyInfo)
-
-GetSupplyInfo.('DiscomfortPrivatePeakRail')=1;
-GetSupplyInfo.('DiscomfortPrivateOffpeakRail')=1;
-GetSupplyInfo.('DiscomfortBusinessPeakRail')=1;
 AttributeGet=GetAttribute(UpdatedModel,GetSupplyInfo)
 
 
-UpdateSupplyInfo={};
-UpdateSupplyInfo.CostPrivateOffpeakAir=1000000; % 403
-UpdateSupplyInfo.CostPrivatePeakAir=1000000;  % 378
-UpdateSupplyInfo.CostBusinessPeakAir=1000000; % 403
-UpdateSupplyInfo.CostBusinessOffpeakAir=1000000;  % 378
-Model=UppdateModel(Model,UpdateSupplyInfo);
+% UpdateSupplyInfo={};
+% UpdateSupplyInfo.CostPrivateOffpeakAir=1000000; % 403
+% UpdateSupplyInfo.CostPrivatePeakAir=1000000;  % 378
+% UpdateSupplyInfo.CostBusinessPeakAir=1000000; % 403
+% UpdateSupplyInfo.CostBusinessOffpeakAir=1000000;  % 378
+% Model=UppdateModel(Model,UpdateSupplyInfo);
 %% optimization of the obj function
-[ObjectiveFunctionBaseline,ObjectiveFunctionNonInteger,OptimizedDemandNonInteger,FinalDecisionVariablesNonInteger,UpdatedModelNonInteger]=OptimizeSupply_ConstraintReformulation(Model,DecisionVariable,RailDiscomfort,SeatCapacity,MaxSeatCapacity,BanAvgift,CSorPS);
+[ObjectiveFunctionBaseline,ObjectiveFunctionNonInteger,OptimizedDemandNonInteger,FinalDecisionVariablesNonInteger,UpdatedModelNonInteger]=OptimizeSupply_ConstraintReformulation(Model,UserDefinedParameters,DecisionVariable);
 
 
 

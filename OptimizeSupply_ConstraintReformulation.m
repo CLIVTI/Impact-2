@@ -35,10 +35,10 @@ DecisionVariable.DiscomfortCostPrivatePeakRail=1;
 DecisionVariable.DiscomfortCostPrivateOffpeakRail=1;
 DecisionVariable.DiscomfortCostBusinessPeakRail=1;
 DecisionVariable.DiscomfortCostBusinessOffpeakRail=1;
-AttributeGet=GetAttribute(Model,DecisionVariable);
+startValueTable=GetAttribute(Model,DecisionVariable);
 
-startValue=table2array(AttributeGet)';
-startValueDisplay=table2array(AttributeGet)';
+startValue=table2array(startValueTable)';
+startValueDisplay=table2array(startValueTable)';
 % get the corresponding alternative names that will change if Decision variables change. AlternativeNames
 [VarNamesStack,DemandSegmentStack,AlternativeStack_Nest1,AlternativeStack_Nest2]=ParseModelAttributes(Model);
 DecisionNames=fieldnames(DecisionVariable);
@@ -147,7 +147,10 @@ fprintf('\n %-15s : %8s %8s \n' , ['Parameter'],['InitialValue'],['Estimates']);
 for i=1:length(beta) 
     fprintf('%-15s : %+8.3f %+8.3f \n', DecisionNames{i}, startValueDisplay(i) , beta(i))
 end
-
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostPrivatePeakRail', startValueTable.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostPrivatePeakRail') , FinalDecisionVariables.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostPrivatePeakRail'))
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostPrivateOffpeakRail', startValueTable.('CostPrivateOffpeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostPrivateOffpeakRail') , FinalDecisionVariables.('CostPrivateOffpeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostPrivateOffpeakRail'))
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostBusinessPeakRail', startValueTable.('CostBusinessPeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostBusinessPeakRail') , FinalDecisionVariables.('CostBusinessPeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostBusinessPeakRail'))
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostBusinessOffpeakRail', startValueTable.('CostBusinessOffpeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostBusinessOffpeakRail') , FinalDecisionVariables.('CostBusinessOffpeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostBusinessOffpeakRail'))
 % print out the capacity of the final model compared to its demand
 [c,~]=CapacityConstraints(beta,UpdatedModel,DecisionVariable,UserDefinedParameters);
 fprintf('\n\n----------------- DISPLAY CAPACITY ---------------------')
