@@ -107,7 +107,7 @@ ModelStructure.Supply.Private.Offpeak.Car('ScaleParameter')=         ScaleParame
 %% specify the in-data structure for the demand segment Business
 ModelStructure.Supply.Business.Peak.Rail=containers.Map();     %     parameter,             value
 ModelStructure.Supply.Business.Peak.Rail('ASCBusinessPeakRail')=        [0,                       1];  
-ModelStructure.Supply.Business.Peak.Rail('CostBusinessPeakRail')=       [-CostScaleParameter(2),                 950];  % normalize cost parameters to 0.01, the scale parameter. Same variable name must be used in Specify population
+ModelStructure.Supply.Business.Peak.Rail('CostBusinessPeakRail')=       [-CostScaleParameter(2)*2,                 950];  % normalize cost parameters to 0.01, the scale parameter. Same variable name must be used in Specify population
 ModelStructure.Supply.Business.Peak.Rail('DiscomfortCostBusinessPeakRail')=       [-CostScaleParameter(2).*ExtraCostBaseValue(3),               (DCValue(3)^((1992+991)/(SeatCapacity(1)*14))-1)];
 ModelStructure.Supply.Business.Peak.Rail('FirstWaitTimePeakRail')=     [-218/60.*CostScaleParameter(2),          FrequencyToWaitTime(14/7)];
 ModelStructure.Supply.Business.Peak.Rail('InVehBusinessPeakRail')=        [-265/60.*CostScaleParameter(2),        3*60];
