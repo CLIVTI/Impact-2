@@ -147,8 +147,10 @@ fprintf('\n %-15s : %8s %8s \n' , ['Parameter'],['InitialValue'],['Estimates']);
 for i=1:length(beta) 
     fprintf('%-15s : %+8.3f %+8.3f \n', DecisionNames{i}, startValueDisplay(i) , beta(i))
 end
-    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostPrivatePeakRail', startValueDisplay(i) , beta(i))
-
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostPrivatePeakRail', startValueTable.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostPrivatePeakRail') , FinalDecisionVariables.('CostPrivatePeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostPrivatePeakRail'))
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostPrivateOffpeakRail', startValueTable.('CostPrivateOffpeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostPrivateOffpeakRail') , FinalDecisionVariables.('CostPrivateOffpeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostPrivateOffpeakRail'))
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostBusinessPeakRail', startValueTable.('CostBusinessPeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostBusinessPeakRail') , FinalDecisionVariables.('CostBusinessPeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostBusinessPeakRail'))
+    fprintf('%-15s : %+8.3f %+8.3f \n', 'TrueCostBusinessOffpeakRail', startValueTable.('CostBusinessOffpeakRail')+ExtraCostBaseValue(1).*startValueTable.('DiscomfortCostBusinessOffpeakRail') , FinalDecisionVariables.('CostBusinessOffpeakRail')+ExtraCostBaseValue(1).*FinalDecisionVariables.('DiscomfortCostBusinessOffpeakRail'))
 % print out the capacity of the final model compared to its demand
 [c,~]=CapacityConstraints(beta,UpdatedModel,DecisionVariable,UserDefinedParameters);
 fprintf('\n\n----------------- DISPLAY CAPACITY ---------------------')
@@ -176,6 +178,7 @@ ExtraCostBaseValue=ParsedUserDefinedParameters.ExtraCostBaseValue;
 CSorPS=ParsedUserDefinedParameters.CSorPS;
 OperationalCost=ParsedUserDefinedParameters.OperationalCost;
 BanAvgift=ParsedUserDefinedParameters.BanAvgift;
+SeatCapacity=ParsedUserDefinedParameters.SeatCapacity;
 
 DecisionVariableNames=fieldnames(DecisionVariable);
 for i=1:length(DecisionVariableNames)
@@ -264,6 +267,18 @@ WaitingTime=table2array(GetAttribute(UpdatedModel,GetSupplyInfo));
 % OperationalCostTrialSolution=(60.*7/WaitingTime(1)).*((78812+BanAvgift(1)).*1.44-BanAvgift(1))+60.*9/WaitingTime(2).*((78812+BanAvgift(2)).*0.56-BanAvgift(2));
 % OperationalCostTrialSolution=(60.*7/WaitingTime(1)).*((62673+BanAvgift(1)).*1.33-BanAvgift(1))+60.*9/WaitingTime(2).*((62673+BanAvgift(2)).*0.67-BanAvgift(2));
 OperationalCostTrialSolution=(60.*7/WaitingTime(1)/2).*OperationalCost(1)+(60.*9/WaitingTime(2)/2).*OperationalCost(2);  % true value 78489
+
+
+GetSupplyInfo={};
+GetSupplyInfo.('FirstWaitTimePeakRail')=1;
+GetSupplyInfo.('FirstWaitTimeOffpeakRail')=1;
+FirstWiatingTimeValues=GetAttribute(UpdatedModel,GetSupplyInfo);
+DemandPerTrainPeak=(CapacitatedDemandTrialSolution.('Private_Peak_Rail')+CapacitatedDemandTrialSolution.('Business_Peak_Rail'))./(60*7/FirstWiatingTimeValues.('FirstWaitTimePeakRail')/2);
+DemandPerTrainOffpeak=(CapacitatedDemandTrialSolution.('Private_Offpeak_Rail')+CapacitatedDemandTrialSolution.('Business_Offpeak_Rail'))./(60*9/FirstWiatingTimeValues.('FirstWaitTimePeakRail')/2);
+DemandPerTrainPeakBaseline=(CapacitatedDemandTrialSolution.('Private_Peak_Rail')+CapacitatedDemandTrialSolution.('Business_Peak_Rail'))./(60*7/FirstWiatingTimeValues.('FirstWaitTimePeakRail')/2);
+
+OperationalCostTrialSolution=(60.*7/WaitingTime(1)/2).*(OperationalCost(1)+(DemandPerTrainPeak))+(60.*9/WaitingTime(2)/2).*OperationalCost(2);  % true value 78489
+
 ObjectiveFunctionFinal.OperationalCost=OperationalCostTrialSolution;
 OperationalCostDiff=OperationalCostTrialSolution-OperationalCostBase;
 

@@ -178,6 +178,7 @@ ExtraCostBaseValue=ParsedUserDefinedParameters.ExtraCostBaseValue;
 CSorPS=ParsedUserDefinedParameters.CSorPS;
 OperationalCost=ParsedUserDefinedParameters.OperationalCost;
 BanAvgift=ParsedUserDefinedParameters.BanAvgift;
+SeatCapacity=ParsedUserDefinedParameters.SeatCapacity;
 
 DecisionVariableNames=fieldnames(DecisionVariable);
 for i=1:length(DecisionVariableNames)
@@ -266,6 +267,20 @@ WaitingTime=table2array(GetAttribute(UpdatedModel,GetSupplyInfo));
 % OperationalCostTrialSolution=(60.*7/WaitingTime(1)).*((78812+BanAvgift(1)).*1.44-BanAvgift(1))+60.*9/WaitingTime(2).*((78812+BanAvgift(2)).*0.56-BanAvgift(2));
 % OperationalCostTrialSolution=(60.*7/WaitingTime(1)).*((62673+BanAvgift(1)).*1.33-BanAvgift(1))+60.*9/WaitingTime(2).*((62673+BanAvgift(2)).*0.67-BanAvgift(2));
 OperationalCostTrialSolution=(60.*7/WaitingTime(1)/2).*OperationalCost(1)+(60.*9/WaitingTime(2)/2).*OperationalCost(2);  % true value 78489
+
+%% trial model for the cost part
+GetSupplyInfo={};
+GetSupplyInfo.('FirstWaitTimePeakRail')=1;
+GetSupplyInfo.('FirstWaitTimeOffpeakRail')=1;
+FirstWiatingTimeValues=GetAttribute(UpdatedModel,GetSupplyInfo);
+FirstWiatingTimeValuesBaseline=GetAttribute(Model,GetSupplyInfo);
+DemandPerTrainPeak=(CapacitatedDemandTrialSolution.('Private_Peak_Rail')+CapacitatedDemandTrialSolution.('Business_Peak_Rail'))./(60*7/FirstWiatingTimeValues.('FirstWaitTimePeakRail')/2);
+DemandPerTrainOffpeak=(CapacitatedDemandTrialSolution.('Private_Offpeak_Rail')+CapacitatedDemandTrialSolution.('Business_Offpeak_Rail'))./(60*9/FirstWiatingTimeValues.('FirstWaitTimeOffpeakRail')/2);
+DemandPerTrainPeakBaseline=(CapacitatedDemandBaseline.('Private_Peak_Rail')+CapacitatedDemandBaseline.('Business_Peak_Rail'))./(60*7/FirstWiatingTimeValuesBaseline.('FirstWaitTimePeakRail')/2);
+DemandPerTrainOffpeakBaseline=(CapacitatedDemandBaseline.('Private_Offpeak_Rail')+CapacitatedDemandBaseline.('Business_Offpeak_Rail'))./(60*9/FirstWiatingTimeValuesBaseline.('FirstWaitTimeOffpeakRail')/2);
+
+OperationalCostTrialSolution=(60.*7/WaitingTime(1)/2).*(OperationalCost(1)+(DemandPerTrainPeak-DemandPerTrainPeakBaseline)*180)+(60.*9/WaitingTime(2)/2).*(OperationalCost(2)+(DemandPerTrainOffpeak-DemandPerTrainOffpeakBaseline)*112);  % true value 78489
+%%
 ObjectiveFunctionFinal.OperationalCost=OperationalCostTrialSolution;
 OperationalCostDiff=OperationalCostTrialSolution-OperationalCostBase;
 

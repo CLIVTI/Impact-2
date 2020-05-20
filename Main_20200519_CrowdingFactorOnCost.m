@@ -19,10 +19,10 @@ UserDefinedParameters={};
 UserDefinedParameters.CostScaleParameter.Private=0.01*0.00172/0.00305;  % costScaleParameter for demand segment private
 UserDefinedParameters.CostScaleParameter.Business= 0.01*0.00172/0.00305;  % costScaleParameter for demand segment business
 
-UserDefinedParameters.DCValue.Private.Peak=5;
-UserDefinedParameters.DCValue.Private.Offpeak=5;
-UserDefinedParameters.DCValue.Business.Peak=5;
-UserDefinedParameters.DCValue.Business.Offpeak=5;
+UserDefinedParameters.DCValue.Private.Peak=3.5;
+UserDefinedParameters.DCValue.Private.Offpeak=3.5;
+UserDefinedParameters.DCValue.Business.Peak=3.5;
+UserDefinedParameters.DCValue.Business.Offpeak=3.5;
 
 UserDefinedParameters.ExtraCostBaseValue.Private.Peak=100;  % the parameter a in the Maria's equation differentiated to different values
 UserDefinedParameters.ExtraCostBaseValue.Private.Offpeak=100;
